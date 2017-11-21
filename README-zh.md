@@ -70,7 +70,7 @@ docker exec -it ipsec-vpn-server env TERM=xterm bash -l
 ```
 将 user 改为新用户的名称，pwd 改为新用户的密码。以下每运行1次添加1个新用户。
 ```
-echo \"user\" l2tpd \"pwd\" >> .\/etc\/ppp\/chap-secrets
+echo \"user\" l2tpd \"pwd\" >> ./etc/ppp/chap-secrets
 ```
 #### 可以使用来查看用户列表。注意：在使用的时候选择 l2tpd 方式。共享密钥为上面你设置的默认用户密钥。
 ```
