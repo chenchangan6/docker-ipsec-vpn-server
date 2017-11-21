@@ -70,11 +70,35 @@ docker exec -it ipsec-vpn-server env TERM=xterm bash -l
 ```
 将 user 改为新用户的名称，pwd 改为新用户的密码。以下每运行1次添加1个新用户。
 ```
+cd /
+
 echo \"user\" l2tpd \"pwd\" \* >> ./etc/ppp/chap-secrets
+
+apt-get update
+
+apt-get install vim
+
+vim ./opt/src/run.sh
+```
+#### 修改并注释掉 
+```
+# Create VPN credentials
+cat > /etc/ppp/chap-secrets <<EOF
+"$VPN_USER" l2tpd "$VPN_PASSWORD" *
+EOF
+```
+改为
+```
+# Create VPN credentials
+#cat > /etc/ppp/chap-secrets <<EOF
+#"$VPN_USER" l2tpd "$VPN_PASSWORD" *
+#EOF
 ```
 
 #### 添加完成记得退出DOCKER。
 ```
+service xl2tpd restart
+
 exit
 ```
 
