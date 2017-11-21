@@ -72,6 +72,12 @@ docker exec -it ipsec-vpn-server env TERM=xterm bash -l
 ```
 echo \"user\" l2tpd \"pwd\" >> ./etc/ppp/chap-secrets
 ```
+
+#### 添加完成记得退出DOCKER。
+```
+exit
+```
+
 #### 可以使用来查看用户列表。注意：在使用的时候选择 l2tpd 方式。共享密钥为上面你设置的默认用户密钥。
 ```
 more ./etc/ppp/chap-secrets
