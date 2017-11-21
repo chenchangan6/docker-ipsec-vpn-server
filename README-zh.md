@@ -1,3 +1,123 @@
+# 快速使用指南&多用户添加
+
+## 建议使用：Ubuntu Xenial 16.04 (LTS)。使用ROOT权限。
+
+### 1.安装docker
+```
+    apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+```
+```
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+```
+```
+apt-key fingerprint 0EBFCD88
+```
+```
+add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+```
+
+```
+apt-get update
+```
+```
+apt-get install docker-ce
+```
+
+### 2.安装VPN
+```
+docker pull hwdsl2/ipsec-vpn-server
+```
+
+### 3.运行支持模块
+```
+modprobe af_key
+```
+
+### 4.建立账号和共享密钥
+
+默认用户：添加后即可登录使用。也是本程序默认创建的第一用户。共享密钥为全局设置（如果添加其他用户，也将使用这个共享密钥），设置完务必记录好。
+“共享密钥”，“默认用户”，“默认用户密码” 请根据您的情况自行修改。注意：请尽量使用避免使用汉字和符号（如果你对LINUX不熟悉的话，请直接使用字母+数字，会比较容易成功。）
+```
+echo -e "VPN_IPSEC_PSK=shared_key\nVPN_USER=user\nVPN_PASSWORD=pwd" > .\/vpn.env
+```
+
+### 5.启动VPN模块
+```
+docker run \
+    --name ipsec-vpn-server \
+    --env-file ./vpn.env \
+    --restart=always \
+    -p 500:500/udp \
+    -p 4500:4500/udp \
+    -v /lib/modules:/lib/modules:ro \
+    -d --privileged \
+    hwdsl2/ipsec-vpn-server
+```
+### 6.核对您设置的密钥，用户名，密码。
+```
+docker logs ipsec-vpn-server
+```
+### 7.添加多用户（l2tpd)。
+```
+docker exec -it ipsec-vpn-server env TERM=xterm bash -l
+```
+将 user 改为新用户的名称，pwd 改为新用户的密码。以下每运行1次添加1个新用户。
+```
+cd /
+
+echo \"user\" l2tpd \"pwd\" \* >> ./etc/ppp/chap-secrets
+
+apt-get update
+
+apt-get install vim
+
+vim ./opt/src/run.sh
+```
+#### 修改并注释掉 
+```
+# Create VPN credentials
+cat > /etc/ppp/chap-secrets <<EOF
+"$VPN_USER" l2tpd "$VPN_PASSWORD" *
+EOF
+```
+改为
+```
+# Create VPN credentials
+#cat > /etc/ppp/chap-secrets <<EOF
+#"$VPN_USER" l2tpd "$VPN_PASSWORD" *
+#EOF
+```
+
+#### 添加完成记得退出DOCKER。
+```
+service xl2tpd restart
+
+exit
+```
+
+#### 可以使用来查看用户列表。注意：在使用的时候选择 l2tpd 方式。共享密钥为上面你设置的默认用户密钥。
+```
+more ./etc/ppp/chap-secrets
+```
+#### 查看用户密钥：VPN_IPSEC_PSK 为共享密钥。
+```
+docker logs ipsec-vpn-server
+```
+
+### 8.快速指南说明：
+
+快速指南指针对linux经验非常有限的用户，对本软件的功能进行只初步使用。高级功能请参考下面的详细说明。
+
+
+
+
 # Docker 上的 IPsec VPN 服务器
 
 [![Build Status](https://travis-ci.org/hwdsl2/docker-ipsec-vpn-server.svg?branch=master)](https://travis-ci.org/hwdsl2/docker-ipsec-vpn-server) [![GitHub Stars](https://img.shields.io/github/stars/hwdsl2/docker-ipsec-vpn-server.svg?maxAge=86400)](https://github.com/hwdsl2/docker-ipsec-vpn-server/stargazers) [![Docker Stars](https://img.shields.io/docker/stars/hwdsl2/ipsec-vpn-server.svg?maxAge=86400)](https://hub.docker.com/r/hwdsl2/ipsec-vpn-server) [![Docker Pulls](https://img.shields.io/docker/pulls/hwdsl2/ipsec-vpn-server.svg?maxAge=86400)](https://hub.docker.com/r/hwdsl2/ipsec-vpn-server)
